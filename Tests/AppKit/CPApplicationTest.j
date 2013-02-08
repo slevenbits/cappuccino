@@ -1,5 +1,6 @@
 @import <AppKit/CPApplication.j>
 @import <AppKit/CPWindow.j>
+@import <AppKit/_CPStandardWindowView.j>
 
 var globalResults = [];
 
@@ -67,7 +68,7 @@ var globalResults = [];
     app = [CPApplication sharedApplication];
 
     // fake the window.location.hash
-    app.window = {location: {hash: "#var1=1/var2=2"}};
+    window.location = {hash: "#var1=1/var2=2"};
     [app setDelegate:[[MyAppDelegate alloc] init]];
 
     aWindow = [[CPWindow alloc] init];
@@ -90,11 +91,11 @@ var globalResults = [];
 
 - (void)testRunModalForWindow
 {
-    var aWindow = [[CPWindow alloc] init];
-    [app runModalForWindow:aWindow];
+    var modalWindow = [[CPWindow alloc] init];
+    [app runModalForWindow:modalWindow];
 
-    [self assertTrue:[aWindow isKeyWindow] message:@"A window must be made key when it's run modally"];
-    [self assertFalse:[aWindow isMainWindow] message:@"A window must not become the main window when it's run modally"];
+    [self assertTrue:[modalWindow isKeyWindow] message:@"A window must be made key when it's run modally"];
+    [self assertFalse:[modalWindow isMainWindow] message:@"A window must not become the main window when it's run modally"];
 
     [app abortModal];
 }

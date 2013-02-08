@@ -21,6 +21,7 @@
  */
 
 #include "CPRange.h"
+#include "Foundation.h"
 
 @import "CPArray.j"
 @import "CPObject.j"
@@ -79,6 +80,10 @@
 */
 - (id)initWithIndex:(CPInteger)anIndex
 {
+    if (!_IS_NUMERIC(anIndex))
+        [CPException raise:CPInvalidArgumentException
+                    reason:"Invalid index"];
+
     return [self initWithIndexesInRange:_CPMakeRange(anIndex, 1)];
 }
 
@@ -89,6 +94,9 @@
 */
 - (id)initWithIndexesInRange:(CPRange)aRange
 {
+    if (aRange.location < 0)
+        [CPException raise:CPInvalidArgumentException reason:"Range " + CPStringFromRange(aRange) + " is out of bounds."];
+
     self = [super init];
 
     if (self)
@@ -728,6 +736,9 @@
 */
 - (void)addIndexesInRange:(CPRange)aRange
 {
+    if (aRange.location < 0)
+        [CPException raise:CPInvalidArgumentException reason:"Range " + CPStringFromRange(aRange) + " is out of bounds."];
+
     // If empty range, bail.
     if (aRange.length <= 0)
         return;

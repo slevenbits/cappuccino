@@ -73,21 +73,44 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
 
         [self configure];
 
-        if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
-            profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
-        else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
-            profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
-        else if([fm fileExistsAtPath:[@"~/.bashrc" stringByExpandingTildeInPath]])
-            profilePath = [@"source ~/.bashrc" stringByExpandingTildeInPath];
-        else if([fm fileExistsAtPath:[@"~/.zshrc" stringByExpandingTildeInPath]])
-            profilePath = [@"source ~/.zshrc" stringByExpandingTildeInPath];
+        NSString* myShell = [[[NSProcessInfo processInfo] environment] objectForKey:@"SHELL"];
+       
+        if (myShell)
+        {
+            shellPath = myShell;
+        }
         else
         {
-            NSAlert *alert = [NSAlert alertWithMessageText:@"Cannot find any valid profile file."
+            shellPath = @"/bin/bash";
+        }
+        
+        if([shellPath isEqualToString:@"/bin/bash"])
+        {
+            if([fm fileExistsAtPath:[@"~/.bash_profile" stringByExpandingTildeInPath]])
+                profilePath = [@"source ~/.bash_profile" stringByExpandingTildeInPath];
+            else if([fm fileExistsAtPath:[@"~/.bashrc" stringByExpandingTildeInPath]])
+                profilePath = [@"source ~/.bashrc" stringByExpandingTildeInPath];
+            else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
+                profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
+            else
+                profilePath = @"";
+        }
+        else if ([shellPath isEqualToString:@"/bin/zsh"])
+        {
+            if([fm fileExistsAtPath:[@"~/.zshrc" stringByExpandingTildeInPath]])
+                profilePath = [@"source ~/.zshrc" stringByExpandingTildeInPath];
+            else if([fm fileExistsAtPath:[@"~/.profile" stringByExpandingTildeInPath]])
+                profilePath = [@"source ~/.profile" stringByExpandingTildeInPath];
+            else
+                profilePath = @"";
+        }
+        else
+        {
+            NSAlert *alert = [NSAlert alertWithMessageText:@"Shell not recognized."
                                              defaultButton:@"OK"
                                            alternateButton:nil
                                                otherButton:nil
-                                 informativeTextWithFormat:@"Neither ~/.bash_profile, ~/.profile, ~/.bashrc nor ~/.zshrc can be found.\n\nWithout this XcodeCapp cannot locate nib2cib.\n\nIf you notice any errors or strange behaviour, please look at the system log for messages and open a ticket."];
+                                 informativeTextWithFormat:@"You are running %@ as your shell, which is not supported. Please change your shell to either BASH or ZSH.", shellPath];
             [alert runModal];
             profilePath = @"";
         }
@@ -415,8 +438,8 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
     NSNumber *status;
 
     task = [[NSTask alloc] init];
-
-    [task setLaunchPath: @"/bin/bash"];
+    
+    [task setLaunchPath:shellPath];
     [task setArguments: arguments];
     [task setStandardOutput:[NSPipe pipe]];
     [task launch];
@@ -514,6 +537,24 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         response = [statusInfo objectAtIndex:1];
 
         DLog(@"handleFileModification:notify: Conversion task result/response: %@/%@", status, response);
+
+        if ([status intValue] == 0 && shouldNotify)
+        {
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
+        }
+        else if (![status intValue] == 0)
+        {
+            if (response)
+            {
+                NSDictionary *errorDictionary = [NSDictionary dictionaryWithObjectsAndKeys:response, @"message",
+                                                                                            splitPath, @"file",
+                                                                                            fullPath, @"path", nil];
+
+                [errorList addObject:errorDictionary];
+            }
+
+            [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
+        }
     }
 
     if (PBXArguments)
@@ -523,18 +564,6 @@ NSString * const XCCListeningStartNotification = @"XCCListeningStartNotification
         status = [statusInfo objectAtIndex:0];
         response = [statusInfo objectAtIndex:1];
         DLog(@"handleFileModification:notify: Update PBX Task result/response: %@/%@", status, response);
-    }
-
-    if ([status intValue] == 0 && shouldNotify)
-    {
-        [delegate performSelector:@selector(growlWithTitle:message:) withObject:successTitle withObject:successMsg];
-    }
-    else if (![status intValue] == 0)
-    {
-        if (response)
-            [errorList addObject:response];
-
-        [delegate performSelector:@selector(growlWithTitle:message:) withObject:@"Error processing file" withObject:splitPath];
     }
 
     [[NSNotificationCenter defaultCenter] postNotificationName:XCCConversionStopNotification object:self];

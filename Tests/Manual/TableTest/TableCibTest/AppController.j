@@ -18,7 +18,7 @@ CPLogRegister(CPLogConsole);
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     // This is called when the application is done loading.
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino-project.org/images/favicon.png" size:CGSizeMake(16,16)];
 }
 
 - (void)awakeFromCib
@@ -28,7 +28,7 @@ CPLogRegister(CPLogConsole);
     // It's a useful hook for setting up current UI values, and other things.
 
     // In this case, we want the window from Cib to become our full browser window
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView

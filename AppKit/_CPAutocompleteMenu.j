@@ -23,7 +23,11 @@
 @import <Foundation/CPObject.j>
 
 @import "CPTextField.j"
+@import "CPTableView.j"
 @import "_CPMenuWindow.j"
+
+@class CPScrollView
+
 
 // TODO Make themable.
 var _CPAutocompleteMenuMaximumHeight = 307;
@@ -67,7 +71,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
         [scrollView setHasHorizontalScroller:NO];
         [contentView addSubview:scrollView];
 
-        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CPRectMakeZero()];
+        tableView = [[_CPNonFirstResponderTableView alloc] initWithFrame:CGRectMakeZero()];
 
         var tableColumn = [CPTableColumn new];
         [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
@@ -113,8 +117,13 @@ var _CPAutocompleteMenuMaximumHeight = 307;
 
 - (void)setIndexOfSelectedItem:(int)anIndex
 {
-    [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
-    [tableView scrollRowToVisible:anIndex];
+    if (anIndex == CPNotFound)
+        [tableView selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+    else
+    {
+        [tableView selectRowIndexes:[CPIndexSet indexSetWithIndex:anIndex] byExtendingSelection:NO];
+        [tableView scrollRowToVisible:anIndex];
+    }
 }
 
 - (int)indexOfSelectedItem
@@ -196,7 +205,7 @@ var _CPAutocompleteMenuMaximumHeight = 307;
     [self setIndexOfSelectedItem:indexOfSelectedItem];
 
     [textField setThemeState:CPThemeStateAutocompleting];
-    [_menuWindow orderFront:self];
+    [[textField window] addChildWindow:_menuWindow ordered:CPWindowAbove];
 
     [self layoutSubviews];
 }

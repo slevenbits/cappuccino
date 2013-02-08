@@ -10,6 +10,7 @@
 
     id          bob;
     id          obj;
+    id          obj2;
     id          cs101;
     id          focus;
 
@@ -65,7 +66,7 @@
 
 - (void)testDirectIVarObservation
 {
-    var bob = [[PersonTester alloc] init];
+    bob = [[PersonTester alloc] init];
 
     [bob addObserver:self forKeyPath:@"phoneNumber" options:nil context:@"testDirectIVarObservation"];
 
@@ -431,7 +432,7 @@
 
 - (void)testDependentKeysPaths
 {
-    var object = [[TestObject alloc] init];
+    var object = [[TestObject2 alloc] init];
 
     [object addObserver:self forKeyPath:@"key" options:0 context:@"testDependentKeysPaths"];
 
@@ -446,8 +447,9 @@
 
 - (void)testSettersReplacedOnce
 {
-    var bob = [[PersonTester alloc] init],
-        betty = [CPObject new];
+    var betty = [CPObject new];
+
+    bob = [[PersonTester alloc] init];
 
     [bob addObserver:self forKeyPath:@"name" options:nil context:@"testSettersReplacedOnce"];
 
@@ -470,7 +472,7 @@
 
 - (void)testNestedNotifications
 {
-    var bob = [[PersonTester alloc] init];
+    bob = [[PersonTester alloc] init];
 
     [bob willChangeValueForKey:@"name"];
     [self assertTrue:bob._willChangeMessageCounter[@"name"] === 1];
@@ -879,7 +881,7 @@
 }
 @end
 
-@implementation TestObject : CPObject
+@implementation TestObject2 : CPObject
 {
     CPString    key @accessors;
     CPString    affectingKey @accessors;

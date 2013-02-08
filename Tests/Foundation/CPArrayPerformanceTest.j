@@ -5,6 +5,8 @@ var FILE = require("file");
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
+@global module
+
 var ELEMENTS = 100,
     REPEATS = 10;
 
@@ -15,7 +17,7 @@ var ELEMENTS = 100,
 
 - (void)setUp
 {
-    var descriptors = [
+    descriptors = [
             [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
             [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
         ];
@@ -210,6 +212,54 @@ var ELEMENTS = 100,
     }
 }
 
+- (void)testObjectsAtIndexesSpeed
+{
+    var SIZE = 1000,
+        c = SIZE,
+        r = rr = REPEATS = 100,
+        location = 0,
+        array = [CPArray array],
+        indexes = [CPIndexSet indexSet];
+
+    while (c--)
+        array.push(""+c);
+
+    while (location < SIZE - 10)
+    {
+        var rangeLength = ROUND(10 * RAND());
+        [indexes addIndexesInRange:CPMakeRange(location, rangeLength)];
+
+        location += rangeLength + ROUND(10 * RAND());
+    }
+
+    var d = new Date(),
+        test1,
+        test2;
+    while (r--)
+        test1 = [array _previous_objectsAtIndexes:indexes];
+    var dd = new Date();
+
+    while (rr--)
+        test2 = [array objectsAtIndexes:indexes];
+    var ddd = new Date();
+
+    CPLog.warn("\n_CPJavaScriptArray -objectsAtIndexes:");
+    CPLog.warn("           CPArray -objectsAtIndexes: " + (dd - d) + "ms.");
+    CPLog.warn("_CPJavaScriptArray -objectsAtIndexes: " + (ddd - dd) + "ms.");
+
+    if (![test1 isEqual:test2])
+        [self fail:"_CPJavaScriptArray -objectsAtIndexes: returns an wrong value"];
+}
+
+@end
+
+@implementation _CPJavaScriptArray (ObjectsAtIndexes)
+
+- (CPArray)_previous_objectsAtIndexes:(CPIndexSet)indexes
+{
+    return [super objectsAtIndexes:indexes];
+}
+
 @end
 
 @implementation CPArray (NativeSort)
@@ -227,7 +277,7 @@ var ELEMENTS = 100,
 {
     var count = [descriptors count];
 
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         var i = 0,
             result = CPOrderedSame;
@@ -251,7 +301,7 @@ var ELEMENTS = 100,
 
 - (CPArray)_native_sortUsingSelector:(SEL)aSelector
 {
-    sort(function(lhs, rhs)
+    self.sort(function(lhs, rhs)
     {
         return [lhs performSelector:aSelector withObject:rhs];
     });

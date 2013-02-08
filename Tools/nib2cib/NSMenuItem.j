@@ -22,9 +22,9 @@
 
 @import <AppKit/CPMenuItem.j>
 
+@import "NSButton.j"
 @import "NSEvent.j"
 @import "NSMenu.j"
-
 
 @implementation CPMenuItem (NSCoding)
 

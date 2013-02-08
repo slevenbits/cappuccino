@@ -91,10 +91,10 @@ task ("clean-sprites", function()
 
 task ("clobber-theme", function()
 {
-    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend")),
+    var f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo.blend"), FILE.join(SYSTEM.env.CAPP_BUILD, "**/Aristo2.blend")),
         paths = f.items();
 
-    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"));
+    f = new FileList(FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo.build"), FILE.join(SYSTEM.env.CAPP_BUILD, "Aristo2.build"));
     paths = paths.concat(f.items());
 
     paths.forEach(function(path)
@@ -263,7 +263,7 @@ task ("demos", function()
     rm_rf(demosDir);
     FILE.mkdirs(demosDir);
 
-    OS.system("curl -L http://github.com/280north/cappuccino-demos/zipball/master > " + zipQuoted);
+    OS.system("curl -L http://github.com/cappuccino/cappuccino-demos/zipball/master > " + zipQuoted);
     OS.system("(cd " + demosQuoted + " && unzip " + zipQuoted + " -d demos)");
 
     require("objective-j");

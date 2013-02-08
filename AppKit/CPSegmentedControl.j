@@ -23,7 +23,10 @@
 @import <Foundation/CPArray.j>
 
 @import "CPControl.j"
+@import "CPWindow_Constants.j"
+@import "_CPImageAndTextView.j"
 
+@global CPApp
 
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;
@@ -115,13 +118,15 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_selectedSegment >= _segments.length)
         _selectedSegment = -1;
 
-    // Make space for/remove space used by dividers.
     var thickness = [self currentValueForThemeAttribute:@"divider-thickness"],
-        delta = thickness * (dividersAfter - dividersBefore),
-        frame = [self frame];
+        frame = [self frame],
+        widthOfAllSegments = 0,
+        dividerExtraSpace = ([_segments count] - 1) * thickness;
 
-    if (delta)
-        [self setFrameSize:CGSizeMake(frame.size.width + delta, frame.size.height)];
+    for (var i = 0; i < [_segments count]; i++)
+        widthOfAllSegments += [_segments[i] width];
+
+    [self setFrameSize:CGSizeMake(widthOfAllSegments + dividerExtraSpace, frame.size.height)];
 
     [self tileWithChangedSegment:0];
 }
@@ -463,7 +468,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CPRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
+        return CGRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
                             bezelInset.top,
                             contentInset.right,
                             height);
@@ -799,6 +804,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             return;
 
         var highlighted = [self testSegment:location] === _trackingSegment;
+
         if (highlighted != _trackingHighlighted)
         {
             _trackingHighlighted = highlighted;

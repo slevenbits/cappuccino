@@ -28,14 +28,18 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import "CPApplication.j"
 @import "CPButton.j"
 @import "CPColor.j"
 @import "CPFont.j"
 @import "CPImage.j"
 @import "CPImageView.j"
 @import "CPPanel.j"
+@import "CPText.j"
 @import "CPTextField.j"
+
+@class CPCheckBox
+
+@global CPApp
 
 /*
     @global
@@ -52,6 +56,8 @@ CPInformationalAlertStyle   = 1;
     @group CPAlertStyle
 */
 CPCriticalAlertStyle        = 2;
+
+var bottomHeight = 71;
 
 /*!
     @ingroup appkit
@@ -164,7 +170,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle         = CPWarningAlertStyle;
         _showHelp           = NO;
         _needsLayout        = YES;
-        _defaultWindowStyle = CPTitledWindowMask;
+        _defaultWindowStyle = _CPModalWindowMask;
         _themeView          = [_CPAlertThemeView new];
 
         _messageLabel       = [CPTextField labelWithTitle:@"Alert"];
@@ -450,6 +456,9 @@ CPCriticalAlertStyle        = 2;
         defaultElementsMargin = [_themeView currentValueForThemeAttribute:@"default-elements-margin"],
         panelSize = [[_window contentView] frame].size,
         buttonsOriginY,
+        buttonMarginY,
+        buttonMarginX,
+        theme = [self theme],
         offsetX;
 
     [aRepresentativeButton setTheme:[self theme]];
@@ -462,6 +471,19 @@ CPCriticalAlertStyle        = 2;
     buttonsOriginY = panelSize.height - [aRepresentativeButton frameSize].height + buttonOffset;
     offsetX = panelSize.width - inset.right;
 
+    switch ([_window styleMask])
+    {
+        case _CPModalWindowMask:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"modal-window-button-margin-x"];
+            break;
+
+        default:
+            buttonMarginY = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-y"];
+            buttonMarginX = [_themeView currentValueForThemeAttribute:@"standard-window-button-margin-x"];
+            break;
+    }
+
     for (var i = [_buttons count] - 1; i >= 0 ; i--)
     {
         var button = _buttons[i];
@@ -473,7 +495,7 @@ CPCriticalAlertStyle        = 2;
             height = CGRectGetHeight(buttonFrame);
 
         offsetX -= width;
-        [button setFrame:CGRectMake(offsetX, buttonsOriginY, width, height)];
+        [button setFrame:CGRectMake(offsetX + buttonMarginX, buttonsOriginY + buttonMarginY, width, height)];
         offsetX -= 10;
     }
 
@@ -537,7 +559,7 @@ CPCriticalAlertStyle        = 2;
     if (_showSuppressionButton)
         lastView = _suppressionButton;
     else if (_accessoryView)
-        lastView = _accessoryView
+        lastView = _accessoryView;
 
     finalSize = [self _layoutButtonsFromView:lastView];
     if ([_window styleMask] & CPDocModalWindowMask)
@@ -545,6 +567,12 @@ CPCriticalAlertStyle        = 2;
 
     [_window setFrameSize:finalSize];
     [_window center];
+
+    if ([_window styleMask] & _CPModalWindowMask || [_window styleMask] & CPHUDBackgroundWindowMask)
+    {
+        [_window setMovable:YES];
+        [_window setMovableByWindowBackground:YES];
+    }
 
     _needsLayout = NO;
 }
@@ -705,7 +733,11 @@ CPCriticalAlertStyle        = 2;
                                                 [CPColor blackColor],
                                                 [CPFont systemFontOfSize:12.0],
                                                 [CPNull null],
-                                                0.0
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
+                                                0.0,
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
                                                 @"message-text-alignment", @"message-text-color", @"message-text-font", @"message-text-shadow-color", @"message-text-shadow-offset",
@@ -723,7 +755,11 @@ CPCriticalAlertStyle        = 2;
                                                 @"suppression-button-text-color",
                                                 @"suppression-button-text-font",
                                                 @"suppression-button-text-shadow-color",
-                                                @"suppression-button-text-shadow-offset"
+                                                @"suppression-button-text-shadow-offset",
+                                                @"modal-window-button-margin-y",
+                                                @"modal-window-button-margin-x",
+                                                @"standard-window-button-margin-y",
+                                                @"standard-window-button-margin-x"
                                                 ]];
 }
 
