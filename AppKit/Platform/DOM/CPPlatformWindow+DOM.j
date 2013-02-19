@@ -1238,7 +1238,7 @@ var resizeTimer = nil;
     if (windowNumber)
         location = [CPApp._windows[windowNumber] convertPlatformWindowToBase:location];
 
-    if (type === "mouseup")
+    if (type === "mouseup" || (_mouseIsDown && type === "mousedown"))
     {
         if (_mouseIsDown)
         {
@@ -1257,7 +1257,7 @@ var resizeTimer = nil;
         }
     }
 
-    else if (type === "mousedown")
+    if (type === "mousedown")
     {
         // If we receive a click event, then we invalidate any scheduled
         // or visible tooltips
@@ -1303,7 +1303,7 @@ var resizeTimer = nil;
         _lastMouseDown = event;
     }
 
-    else // if (type === "mousemove" || type === "drag")
+    if (type === "mousemove" || type === "drag")
     {
         if (_DOMEventMode)
             return;
